@@ -8,9 +8,9 @@ GOGET=$(GOCMD) get
 # Binary names
 TARGET = hello
 
-SOURCE = hello.go
+SRCDIR = ./src
 
-BINDIR = ../Debug
+BINDIR = ./Debug
 
 GOFLAGS =
 
@@ -20,9 +20,10 @@ all : clean build
 
 build :
 	mkdir -p $(BINDIR)
-	$(GOBUILD) -o $(BINDIR)/$(TARGET) -v
+	$(GOBUILD) -o $(BINDIR)/$(TARGET) -v $(SRCDIR)
 
 clean : 
+	$(GOCLEAN) 
 	rm -rf $(BINDIR)/*
 
 run :
