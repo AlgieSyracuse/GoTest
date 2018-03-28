@@ -6,21 +6,19 @@ GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
 
 # Binary names
-TARGET = hello
+TARGET = GoServer
 
 SRCDIR = ./src
-
 BINDIR = ./Debug
 
-GOFLAGS =
 
 .PHONY : all build clean run
 
-all : clean build
+all : clean build run
 
 build :
 	mkdir -p $(BINDIR)
-	$(GOBUILD) -o $(BINDIR)/$(TARGET) -v $(SRCDIR)
+	$(GOBUILD) -o $(BINDIR)/$(TARGET) -v $(SRCDIR)/$(TARGET).go
 
 clean : 
 	$(GOCLEAN) 
