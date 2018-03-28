@@ -6,7 +6,7 @@ GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
 
 # Binary names
-TARGET = GoServer
+TARGET = GoClient
 
 SRCDIR = ./src
 BINDIR = ./Debug
@@ -18,7 +18,7 @@ all : clean build run
 
 build :
 	mkdir -p $(BINDIR)
-	$(GOBUILD) -o $(BINDIR)/$(TARGET) -v $(SRCDIR)/$(TARGET).go
+	$(GOBUILD) -o $(BINDIR)/$(TARGET) -v $(SRCDIR)/
 
 clean : 
 	$(GOCLEAN) 
