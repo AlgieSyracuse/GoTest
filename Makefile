@@ -26,3 +26,6 @@ clean :
 
 run :
 	$(BINDIR)/$(TARGET)
+
+test :
+	$(GOTEST) -v $(SRCDIR)/... 

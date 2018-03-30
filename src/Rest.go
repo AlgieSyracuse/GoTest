@@ -8,21 +8,21 @@ import (
 	"strconv"
 )
 
+// URIcoinbase Base URI
+const URIcoinbase = "https://api.coinbase.com/v2/prices/"
+
+// URIbitfinex  Base URI
+const URIbitfinex = "https://api.bitfinex.com/v2/ticker/"
+
 // Data : DTO
 type Data struct {
-	Title string
-	Bid   float64
-	Ask   float64
+	Title  string
+	Symbol string
+	Bid    float64
+	Ask    float64
 }
 
-// GetBitfinex : tset Bitfinex REST, display result on console
-// type Record struct {
-//		Title   string
-//		Bid     float64
-//		BidSize float64
-//		Ask     float64
-//		AskSize float64
-//	}
+// GetBitfinex : return number array, not JSON
 func GetBitfinex(symbol string) (Data, error) {
 	resp, err := http.Get(URIbitfinex + symbol)
 	defer resp.Body.Close()
@@ -41,15 +41,7 @@ func GetBitfinex(symbol string) (Data, error) {
 		log.Println(err)
 		return Data{}, err
 	}
-	return Data{Title: symbol, Bid: nums[0], Ask: nums[2]}, nil
-	/*
-		rec := Record{
-			Title:   symbol,
-			Bid:     nums[0],
-			BidSize: nums[1],
-			Ask:     nums[2],
-			AskSize: nums[3],
-		}*/
+	return Data{Title: "Bitfinex", Symbol: symbol, Bid: nums[0], Ask: nums[2]}, nil
 }
 
 // GetCoinbase :
@@ -90,19 +82,17 @@ func GetCoinbase(symbol string) (Data, error) {
 	if err2 := json.NewDecoder(respSell.Body).Decode(&recAsk); err2 != nil {
 		return Data{}, err2
 	}
-
-	// fmt.Printf("\n Coinbase\n    symbol: %s, bid-amount: %s, ask-amoutn: %s\n", recBid.Data.Base+"-"+recBid.Data.Currency, recBid.Data.Amount, recAsk.Data.Amount)
 	bidPrice, _ := strconv.ParseFloat(recBid.Data.Amount, 64)
 	askPrice, _ := strconv.ParseFloat(recAsk.Data.Amount, 64)
-
 	// coinbase bug?
 	if bidPrice > askPrice {
 		bidPrice, askPrice = askPrice, bidPrice
 	}
 
 	return Data{
-		Title: symbol,
-		Bid:   bidPrice,
-		Ask:   askPrice,
+		Title:  "Coinbase",
+		Symbol: symbol,
+		Bid:    bidPrice,
+		Ask:    askPrice,
 	}, nil
 }

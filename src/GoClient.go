@@ -8,29 +8,43 @@ import (
 	"time"
 )
 
-// URIcoinbase Base URI
-const URIcoinbase = "https://api.coinbase.com/v2/prices/"
-
-// URIbitfinex  Base URI
-const URIbitfinex = "https://api.bitfinex.com/v2/ticker/"
+// REST api :
+type REST struct {
+	tk     *time.Ticker
+	symbol string
+	run    func(string) (Data, error)
+}
 
 func main() {
-	t := time.Duration(12)
-	go TickWrapper(time.NewTicker(t*time.Second), "tBTCUSD", GetBitfinex)
-	go TickWrapper(time.NewTicker(t*time.Second), "BTC-USD", GetCoinbase)
+	T := time.Duration(6)
+	pREST := [2]*REST{
+		&REST{time.NewTicker(T * time.Second), "tBTCUSD", GetBitfinex},
+		&REST{time.NewTicker(T * time.Second), "BTC-USD", GetCoinbase},
+	}
+
+	ch := make(chan Data) // shared-data channel
+	defer close(ch)
+
+	for _, pT := range pREST {
+		go TickWrapper(pT, ch)
+	}
+	go TickSimulate(time.NewTicker(T*time.Second), ch)
 
 	ReadCmd()
 }
 
-/* TickWrapper ...
+// TickWrapper ... rest api
+/*
 Bitfinix : rate limit policy 10 to 90 requests per minute
 */
-func TickWrapper(tk *time.Ticker, symbol string, Do func(string) (Data, error)) {
-	defer tk.Stop()
-
-	for t := range tk.C {
-		if data, err := Do(symbol); nil == err {
-			fmt.Println(t.Format("Jan 2 2006 15:04:05 EST"), data)
+func TickWrapper(pT *REST, ch chan Data) {
+	defer pT.tk.Stop()
+	for tic := range pT.tk.C {
+		if data, err := pT.run(pT.symbol); nil == err {
+			fmt.Printf("%s  (REST)get:  %+v\n", tic.Format("15:04:05 EST"), data)
+			select { // non-block
+			case ch <- data:
+			}
 		} else {
 			log.Println(err)
 		}
@@ -39,9 +53,8 @@ func TickWrapper(tk *time.Ticker, symbol string, Do func(string) (Data, error)) 
 
 // ReadCmd : read a line from Stdin
 func ReadCmd() {
-	// Stdin
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Go starts...")
+	fmt.Println("\n\n  ===  GO client starts... ===")
 	text, _ := reader.ReadString('\n') // delimit
 	fmt.Println(text)
 }
